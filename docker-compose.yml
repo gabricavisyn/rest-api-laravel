@@ -2,84 +2,84 @@ version: '3'
 services:
 
   #PHP Service
-  its-rest-api-app:
-    image: its-rest-api-app
+  its-rest-api-web-app:
+    image: its-rest-api-web-app
     build:
       context: .
       dockerfile: Dockerfile-dev.dockerfile
-    container_name: its-rest-api-app
+    container_name: its-rest-api-web-app
     restart: unless-stopped
     tty: true
     depends_on:
-      - its-rest-api-db
-      - its-rest-api-redis
+      - its-rest-api-web-db
+      - its-rest-api-web-redis
     ports:
       - "8080:80"
     environment:
-      SERVICE_NAME: its-rest-api-app
+      SERVICE_NAME: its-rest-api-web-app
       SERVICE_TAGS: dev
-      PHP_IDE_CONFIG: "serverName=fpm-its-rest-api-app"
+      PHP_IDE_CONFIG: "serverName=fpm-its-rest-api-web-app"
     working_dir: /var/www
     volumes:
       - ./:/var/www:delegated
       - ./_devops/local/docker/php/php-dev.ini:/etc/php8/conf.d/custom.ini:delegated
 
   #PostgresSQL Service
-  its-rest-api-db:
+  its-rest-api-web-db:
     image: postgres
-    container_name: its-rest-api-db
+    container_name: its-rest-api-web-db
     restart: unless-stopped
     tty: true
     environment:
       POSTGRES_PASSWORD: root
-      POSTGRES_USER: its-rest-api-db
-      POSTGRES_DB: its-rest-api-db
+      POSTGRES_USER: its-rest-api-web-db
+      POSTGRES_DB: its-rest-api-web-db
       SERVICE_TAGS: dev
       SERVICE_NAME: postgres
     volumes:
-      - its_rest_api_dbdata_postgres:/var/lib/postgresql/data
+      - its_rest_api_web_dbdata_postgres:/var/lib/postgresql/data
       - ./_devops/local/docker/postgres/dump_parking:/var/tmp/db_dumps:delegated
 
   #PG Admin Service
-  its-rest-api-pgadmin:
+  its-rest-api-web-pgadmin:
     image: dpage/pgadmin4
     restart: unless-stopped
     tty: true
     depends_on:
-      - its-rest-api-db
+      - its-rest-api-web-db
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@pg.io
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - 8076:80
     volumes:
-      - its_rest_api_db_pgadmin_data:/var/lib/pgadmin
+      - its_rest_api_web_db_pgadmin_data:/var/lib/pgadmin
 
   #Redis Service
-  its-rest-api-redis:
+  its-rest-api-web-redis:
     image: redis:alpine
-    container_name: its-rest-api-redis
+    container_name: its-rest-api-web-redis
     restart: unless-stopped
     command: redis-server --requirepass redisPass#123456
     tty: true
 
   #Redis Gui
-  its-rest-api-redis-gui:
+  its-rest-api-web-redis-gui:
     image: rediscommander/redis-commander
-    container_name: its-rest-api-redis-gui
+    container_name: its-rest-api-web-redis-gui
     restart: unless-stopped
     tty: true
     depends_on:
-      - its-rest-api-redis
+      - its-rest-api-web-redis
     ports:
       - "8081:8081"
     environment:
-      - REDIS_HOST=its-rest-api-redis
+      - REDIS_HOST=its-rest-api-web-redis
       - REDIS_PASSWORD=redisPass#123456
 
 #Volumes
 volumes:
-  its_rest_api_dbdata_postgres:
+  its_rest_api_web_dbdata_postgres:
     driver: local
-  its_rest_api_db_pgadmin_data:
+  its_rest_api_web_db_pgadmin_data:
     driver: local
